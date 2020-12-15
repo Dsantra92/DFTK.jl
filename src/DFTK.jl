@@ -149,6 +149,8 @@ include("external/load_from_python.jl")
 include("external/load_from_file.jl")
 include("external/ase.jl")
 include("external/pymatgen.jl")
+include("external/VTK.jl")
+export EnergyToVTK
 
 export compute_bands
 export high_symmetry_kpath

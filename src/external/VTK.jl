@@ -2,9 +2,12 @@
 using WriteVTK
 
 """
-Returns th
+    EnergyToVTK(VTKFileName::String, energy::Energies{::Number})
+
+Stores the Energy structure in a VTK image file and returns the name of the file.
 """
 function EnergyToVTK(VTKFileName::String, energy::Energies{<:Number})
+
     vtkfile = vtk_grid(VTKFileName, 1, 1)
     for i in keys(energy)
         vtkfile[i] = energy.energies[i]
@@ -14,40 +17,60 @@ function EnergyToVTK(VTKFileName::String, energy::Energies{<:Number})
 end
 
 """
-Returns Image data of densities.
+    DensityToVtk(VTKFileName::String, ρ)
+
+Stores the energy density in a VTK image file and returns the name of the file.
+The density is stored in 3 submatrices : Real, Real components of Fourier, Imaginary
+components of Fourier.
 """
-function DensityToVtk(VTKFileName::String, Density::RealFourierArray{T, <: AbstractArray{T, 3},  <: AbstractArray{Complex{T}, 3}}) where T<:Real
-    out = vtk_write_array(VTKFileName,(Density.real, Base.getproperty.(Density.fourier, :re), Base.getproperty.(Density.fourier, :im)),
-                    ("Real", "Fourier Real", "Fourier Complex"))
+function DensityToVtk(VTKFileName::String, ρ::RealFourierArray{T, <: AbstractArray{T, 3}, 
+                                                 <: AbstractArray{Complex{T}, 3}}) where T<:Real
+
+    out = vtk_write_array(VTKFileName,(ρ.real, Base.getproperty.(ρ.fourier, :re),
+                          Base.getproperty.(ρ.fourier, :im)), 
+                            ("Real", "Fourier Real", "Fourier Complex"))
     return out[1]
 end
 
 """
-Returns Image data of Eigen values.
+    EigenValuesToVTK(VTKFileName::String, Eigenvalues)
+
+Stores the eigen values in a VTK image file and returns the name of the file.
 """
 function EigenValuesToVTK(VTKFileName::String, Eigenvalues::Array{Array{T,1},1}) where T<:Real
     eigen_mat = hcat(Eigenvalues...)
-    out = vtk_write_array(VTKFileName, eigen_mat, "Occupation")
+    out = vtk_write_array(VTKFileName, eigen_mat, "Eigen")
     return out[1]
 end
 
 """
-Returns Image data of the wave.
+    WavesTOVTK(VTKFIleName::String, wave)   
+
+Stores the wave values in a VTK image file and returns the name of the file.
+If the sizes of wave vectors for each each value is not equal, the wave matrix
+will have size = (e, w, n) where e = No of eigen values, w = max no of values for
+each eigen value, n =  no of Kpoints). The matrix is stored as two submatrix,
+one containing the real part and the other containing the imaginary part.
 """
 function WavesTOVTK(VTKFIleName::String, wave)
+
     size = (size(wave[1])[2], maximum(x->size(x)[1], wave), length(wave))
     wave_mat = zeros(Complex, size...)
     @views for i = 1:length(wave)
         wave_mat[:,:,i] = wave[i]
     end
-    out = vtk_write_array(VTKFileName, wave_mat, "Wave")
+    out = vtk_write_array(VTKFileName, (Base.getproperty.(wave_mat, :re), 
+            Base.getproperty.(wave_mat, :im)), "Wave")
     return out[1]
 end
 """
-Returns Image data of the occupation.
+    OccupationToVTK(VTKFileName::String, occupation)
+    
+Stores the occupation values in a VTK image file and returns the file name.
 """
-function OccupationToVTK(VTKFileName::String, occupation::Array{Array{T,1},1}) where T
+function OccupationToVTK(VTKFileName::String, occupation::Array{Array{T,1},1}) where T<:Real
+   
     occupation_mat = hcat(occupation)
-    out = vtk_write_array(VTKFileName, occupation_mat, "Eigen values")
+    out = vtk_write_array(VTKFileName, occupation_mat, "Occupation")
     return out[1]
 end

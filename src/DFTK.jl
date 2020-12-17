@@ -151,6 +151,10 @@ include("external/ase.jl")
 include("external/pymatgen.jl")
 include("external/VTK.jl")
 export EnergyToVTK
+export DensityToVtk
+export WavesToVTK
+export OccupationToVTK
+export EigenValuesToVTK
 
 export compute_bands
 export high_symmetry_kpath
